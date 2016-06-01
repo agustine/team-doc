@@ -48,28 +48,21 @@ React的项目经理Tom Occhino进一步阐述React诞生的初衷，在演讲�
 我们看看JSX干了些啥？
 
 ~~~javascript
-var LikeButton = React.createClass({
-  getInitialState: function() {
-    return {liked: false};
-  },
-  handleClick: function(event) {
-    this.setState({liked: !this.state.liked});
-  },
+var CommentBox = React.createClass({
   render: function() {
-    var text = this.state.liked ? 'like' : 'haven\'t liked';
     return (
-      <p onClick={this.handleClick}>
-        You {text} this. Click to toggle.
-      </p>
+      <div className="commentBox">
+        Hello, world! I am a CommentBox.
+      </div>
     );
   }
 });
-
 ReactDOM.render(
-  <LikeButton />,
-  document.getElementById('example')
+  <CommentBox />,
+  document.getElementById('content')
 );
 ~~~
+
 JSX是React的核心组成部分，它使用XML标记的方式去直接声明界面，界面组件之间可以互相嵌套。严格意义上来说它不能算是一种模板的实现方式。
 我们可以直接用js来实现逻辑上的DOM输出，比如下面的列表渲染：
 
@@ -90,10 +83,11 @@ render: function () {
 }
 ~~~
 
-组件化
+# 组件化
 
 react十分适合封装公共组件，及其嵌套调用。组件的DOM结构、逻辑、甚至样式皆可封装在一起。
 
+~~~javascript
 var Avatar = React.createClass({
   render: function() {
     return (
@@ -127,8 +121,11 @@ ReactDOM.render(
   <Avatar pagename="Engineering" />,
   document.getElementById('example')
 );
+~~~
+
 React将用户界面看做简单的状态机器。当组件处于某种状态时，那么就输出这个状态对应的界面。这样是的方式，很容易确保界面的一致性。
 
+~~~javascript
 var LikeButton = React.createClass({
   getInitialState: function() {
     return {liked: false};
@@ -145,8 +142,11 @@ var LikeButton = React.createClass({
     );
   }
 });
+~~~
 
-整体刷新
+## 整体刷新
+
+### 之前backbone遇到的问题
 
 让我们想想之前用backbone的时候，当模型数据改变的时候我们是怎么做的？
 
@@ -165,7 +165,65 @@ amount 账户余额 number
 当用户的账户余额大于4000，点亮vip图标
 然后对应这些story，我们在视图里添加监听
 
-
+~~~javascript
 initialize: function(){
-	this.listenTo(this.model, )
+	this.listenTo(this.model, 'change: nick', this.renderNick);
+    this.listenTo(this.model, 'change: honor', this.renderHonor);
+    this.listenTo(this.model, 'change: amount', this.renderVip);
+
+    return this.render();
 }
+~~~
+
+好烦躁啊好烦躁，3个render局部的方法还是另外写。即麻烦又不好维护。
+我们姑且称之为层叠式更新，这只是单视图，后面会有嵌套的子视图。
+界面越来越复杂，story越来越多，所以啊，懒人就该有懒人的做法。
+
+嗯，干脆改下。
+
+~~~javascript
+initialize: function(){
+	this.listenTo(this.model, 'change', this.render);
+
+    return this.render();
+}
+~~~
+
+好了，这样干净多了，一劳永逸哈哈，但这有出现了另一个问题。如，用户获得了一个勋章，恩，其实应该只需要为对应的勋章元素添加一个class即可，但我们为此确重新render的视图...
+不管从渲染性能、实际效果还是用户体验来说都不是一种理想的处理方式。
+
+### React如何处理这样的问题呢？
+
+React是整体刷新来解决层叠式更新复杂度的问题。即只要state发生变化，都相当一次刷新，React框架自身来解决局部更新的问题。
+React为此引入的虚拟DOM的解决方案。
+简而言之就是，UI界面是一棵DOM树，对应的我们创建一个全局唯一的数据模型，每次数据模型有任何变化，都将整个数据模型应用到UI DOM树上，由React来负责去更新需要更新的界面部分。事实证明，这种方式不但简化了开发逻辑并且极大的提高了性能。
+
+它的性能依赖于React diff算法。详细的介绍参考[http://www.w3ctech.com/topic/1598](http://www.w3ctech.com/topic/1598)
+
+## 单向数据流
+
+Flux其实并非是一个框架，它是一种理念，一种思想，可以称之为"单向数据流"。
+
+Facebook推出的Flux只是这种思想的一种实现。
+
+先看看MV*:
+
+<img width="100%" src="mvc.jpeg">
+
+Flux:
+
+<img width="100%" src="flux.jpeg">
+
+...看上去是这样的简单？
+其实应该是这样的：
+
+<img width="100%" src="flux-detail.jpeg">
+
+看上去完全和MV*是一个量级的么...那有毛意义？
+
+好吧！让我们分析下这样做的优势：
+
+1. Flux中所有的箭头都指向同一个方向。
+2. Flux种的派发器确保了系统中一次只会有一个action流。派发器也能让开发者指明回调函数执行的顺序，其中会使用waitFor方法来告诉回调函数依次执行。
+
+这些特点无不为了提高代码的可预测性这个最终目标。是开发者在操作数据源交互时变得简单。
