@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/4.1.0/rx.all.js"></script>
+    <style>
+        svg {
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+
+<button id="click-me">Click me!</button>
+
+<script>
+
+    let clickStream = Rx.Observable.fromEvent(document.getElementById('click-me'), 'click');
+
+    clickStream
+            .buffer(clickStream.debounce(250))
+            .map(list => list.length);
+        //    .filter(x => x === 2)
+            .subscribe(times => {
+                document.getElementById('click-me').innerHTML = times;
+            })
+</script>
+</body>
+</html>
