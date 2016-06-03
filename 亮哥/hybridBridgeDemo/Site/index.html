@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>hybrid</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0,height=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" href="css/main.css" />
+    <style>
+		div,button,input{font-size:24px;}
+		button{padding:10px 20px; background:#f55; color:#fff; border-radius:10px; border:none;}
+		input{width:100px;}
+    </style>
+</head>
+
+<body>
+	<!-- <h1><a href="javascript:location.reload()">刷新</a></h1> -->
+	<div><button id="getNetType">getNetType</button></div>
+    <div>
+    	channel: <input type="text" id="payChannel" />
+	    <button id="doPay">pay</button>
+	</div>
+    <script type="text/javascript" src="ll.hybrid.bridge.js?t=66345"></script>
+	<script>
+	
+		$('getNetType').onclick = function(){
+			var netType = llNative.getNetType();
+			alert("netType:" + netType);
+		}
+
+		$('doPay').onclick = function(){
+			var channel = $('payChannel').value;
+
+			llNative.pay({orderId: '123', channel: channel}, {
+				success: function(){
+					alert("支付成功");
+				}, 
+				fail: function(msg){
+					alert('支付失败: ' + msg);
+				},
+				cancel: function(){
+					alert('取消支付');
+				}
+			});
+			console.log('pay function done.')
+		}
+
+		function $(id) {
+			return document.getElementById(id);
+		}
+
+	</script>
+</body>
+
+</html>

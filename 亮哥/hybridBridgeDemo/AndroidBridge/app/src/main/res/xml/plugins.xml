@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+html5访问本地功能插件配置，新加功能可在pluglins内添加plugin子节点。
+plugin需要配置name和class 两个属性。
+name:javascript对应的对象名
+class:接口对应的java类的路径。该类需要实现 lly.h5.android.test.hybrid.plugin.base.IPlugin，也可继承lly.h5.android.test.hybrid.plugin.Plugin
+-->
+<plugins>
+    <plugin name="Payment" class="lly.h5.android.test.hybrid.plugin.Payment"/>
+    <plugin name="Device" class="lly.h5.android.test.hybrid.plugin.Device"/>
+    <plugin name="Toast" class="lly.h5.android.test.hybrid.plugin.Toast"/>
+</plugins>
